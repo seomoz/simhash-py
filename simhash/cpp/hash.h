@@ -35,11 +35,16 @@
  * -----------------------------------------------------------------------------
  */
 
+#ifndef SIMHASH_HASH_H
+#define SIMHASH_HASH_H
+
 #include <cstring>      /* defined size_t */
 #include <stdint.h>     /* defines uint32_t etc */
 
 void hashlittle2( 
-  const void *key,       /* the key to hash */
-  size_t      length,    /* length of the key */
-  uint32_t   *pc,        /* IN: primary initval, OUT: primary hash */
-  uint32_t   *pb);       /* IN: secondary initval, OUT: secondary hash */
+    const void *key,       /* the key to hash */
+    size_t      length,    /* length of the key */
+    uint32_t   *pc,        /* IN: primary initval, OUT: primary hash */
+    uint32_t   *pb);       /* IN: secondary initval, OUT: secondary hash */
+
+#endif
