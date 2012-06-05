@@ -26,7 +26,7 @@ Choosing all the unique combinations of _m - k_ blocks, we perform a permutation
 on each of the hashes for the documents so that those blocks are first in the 
 hash. Perhaps a picture would illustrate it better:
 
-	64------54|53------43|42-----33|32------22|21------11|10------0|
+	63------53|52------42|41-----32|31------21|20------10|09------0|
 	|    A    |     B    |    C    |     D    |     E    |    F    |
 	
 	If m = 6, k = 3, we'll choose permutations:

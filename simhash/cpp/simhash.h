@@ -92,20 +92,34 @@ namespace Simhash {
     		* @param hash    - find the first near-duplicate query
     		* @param results - vector to fill with all the fingerprints similar
     		*                  to the query */
-    		void find(hash_t query, vector<hash_t>& results);
+    		void find(hash_t query, std::vector<hash_t>& results);
     		
     		/**
     		 * In order to correctly insert hashes into the table, they must be 
     		 * permuted subject to the permutation pattern for this table.
     		 * 
     		 * @note Users do not need to call this method. It's merely made 
-    		 * publish to ease testing and for those curious about its workings. 
+    		 * public to ease testing and for those curious about its workings. 
     		 *
     		 * @param hash - the hash to permute (subject to the table's
     		 *               configuration)
     		 *
     		 * @return permuted hash */
     		hash_t permute(hash_t hash);
+    		
+    		/**
+    		 * Reverse the permutation associated with this table. While the
+    		 * permutation allows for fast queries, in the end we must reverse
+    		 * this process to get a result back
+    		 *
+    		 * @note Users do not need to call this methods. It's merely made
+    		 * public to ease testing and for those curious about its workings.
+    		 *
+    		 * @param hash - the hash to unpermute
+    		 *
+    		 * @return unpermuted hash */
+    	    hash_t unpermute(hash_t hash);
+    		 
     	private:
     		// Private and undefined to prevent their use
     		Table();
@@ -113,13 +127,15 @@ namespace Simhash {
     		
     		/* Permutation internals
     		 *
-    		 * Permuting hashes is actually kind of a pain. A relatively 
-    		 * efficient and understandable way to do this is to keep track of 
-    		 * the widhts of each of the blocks of bits, and then the offsets of 
-    		 * their lsb. The blocks themselves are stored as bitmasks. */
-    		std::vector<size_t> widths;
-    		std::vector<size_t> offsets;
-    		std::vector<hash_t> masks;
+    		 * Permuting hashes is actually kind of a pain. Unpermuting them is 
+    	     * equally difficult. To accomplish this, we maintain a vector of
+    	     * masks that give specified blocks (forward_masks) and the offset 
+    	     * between their original position and their permuted position. To
+    	     * speed up unpermutation, we'll also store the reverse masks, which
+    	     * are just the masks shifted by their offsets */
+    		std::vector<int   > offsets;
+    		std::vector<hash_t> forward_masks;
+    		std::vector<hash_t> reverse_masks;
     		
     		/* Differing bits
     		 *
