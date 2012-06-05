@@ -16,4 +16,4 @@ simhash.o: simhash.h simhash.cpp
 	$(CPP) $(CPPOPTS) -o simhash.o -c simhash.cpp
 
 clean:
-	rm -rf *.o
+	rm -rf driver *.o

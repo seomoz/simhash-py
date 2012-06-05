@@ -17,7 +17,7 @@ the content. Two documents are considered near-duplicates if their hashes differ
 by at most _k_ bits, a parameter chosen by the user.
 
 In this context, there is a large corpus of known fingerprints, and we would 
-like to determine all the fingerprints that differ by our query byt _k_ or fewer
+like to determine all the fingerprints that differ by our query by _k_ or fewer
 bits. To accomplish this, we divide up the 64 bits into at _m_ blocks, where 
 _m_ is greater than _k_. If hashes A and B differ by at most _k_ bits, then at
 least _m - k_ groups are the same.
