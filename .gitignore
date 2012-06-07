@@ -4,3 +4,4 @@ driver
 build/*
 *.cpp
 *.so
+*.pyc

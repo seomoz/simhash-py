@@ -36,7 +36,7 @@ class TestSimhash(unittest.TestCase):
                     else:
                         self.assertEqual(self.corpus.find_first(i), 0)
     
-    def find_all(self):
+    def test_find_all(self):
         # We should be able to find /all/ the fingerprints that we expect. This
         # also tests that results given back are equal to the original 
         # fingerprints and not the permuted one.
