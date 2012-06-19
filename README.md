@@ -53,7 +53,28 @@ basis of this is the `table`. The `table` tracks hashes inserted into it subject
 to a permutation associated with the table. This permutation is described as a
 vector of bitmasks of contiguous bit ranges, whose populations sum to 64.
 
+Example
+=======
 
+Let's suppose that our corpus has a fingerprint:
 
+	0100101110111011001000101111101110111100001010011101100110110101
 
+and we have a query:
 
+	0100101110111011011000101111101110011100001010011100100110110101
+
+and they differ by only three bits which happen to fall in blocks B, D and E:
+
+	63------53|52------42|41-----32|31------21|20------10|09------0|
+	|    A    |     B    |    C    |     D    |     E    |    F    |
+	|         |          |         |          |          |         |
+	0000000000000000010000000000000000100000000000000001000000000000
+
+Since any fingerprint matching the query differs by at most 3 bits, at most 3
+blocks can differ, and at least 3 must match. Whatever table has the 3 blocks 
+that do not differ as the leading blocks will match the query when doing a scan.
+In this case, the table that's permuted `A C F B D E` will match. It's important
+to note that it's possible for a query to match from more than one table. For 
+example, if two of the non-matching bits are in the same block, or the query 
+differs by fewer than 3 bits.
