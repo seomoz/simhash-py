@@ -1,3 +1,6 @@
+from cython.operator cimport dereference  as deref
+from cython.operator cimport preincrement as preinc
+
 ################################################################################
 # Core. If you're looking for insight into the library, look here
 ################################################################################
@@ -24,6 +27,14 @@ cdef class PyTable:
     
     def __dealloc__(self):
         del self.tbl
+    
+    cpdef hashes(self):
+        cdef object results = list()
+        cdef const_iterator_t it = self.tbl.begin()
+        while it != self.tbl.end():
+            results.append(deref(it))
+            preinc(it)
+        return results
     
     cpdef insert_bulk(self, hashes):
         '''Accept a list of simhashes and insert them into the table'''
@@ -122,6 +133,10 @@ cdef class PyCorpus:
         for combo in itertools.combinations(perms, num_blocks - diff_bits):
             permutors = list(combo) + [p for p in perms if p not in combo]
             self.tables.append(PyTable(diff_bits, permutors))
+    
+    cpdef hashes(self):
+        '''Return all the keys in here'''
+        return self.tables[0].hashes()
     
     cpdef insert_bulk(self, hashes):
         '''Insert the provided hashes into each of the tables'''

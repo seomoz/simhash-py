@@ -69,6 +69,13 @@ class TestSimhash(unittest.TestCase):
             for t in corpus.tables:
                 for q in queries:
                     self.assertEqual(t.unpermute(t.permute(q)), q)
+    
+    def test_get_all(self):
+        # We should also be able to get a list of all the hashes that are in the
+        # corpus
+        inputs = range(1000)
+        self.corpus.insert_bulk(inputs)
+        self.assertEqual(self.corpus.hashes(), inputs)
 
 if __name__ == '__main__':
     unittest.main()
