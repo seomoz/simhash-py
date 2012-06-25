@@ -9,6 +9,67 @@ facilities to distribute the lookup tables. This implementation follows that
 described in the Google paper on the subject of near-duplicate detection with 
 simhash.
 
+Building
+========
+This library links against [`libJudy`](http://judy.sourceforge.net/), which must
+be installed before building this. It also depends on Cython. With those pieces 
+in place, it's business as usual
+
+	python setup.py install
+
+Usage
+=====
+A `Corpus` is a collection of all the tables necessary to perform the query 
+efficiently. There are two parameters, `num_blocks` and `diff_bits` which 
+describe the number of blocks into which the 64-bit hashes should be divided
+(see more about this below) and the number of bits by which two hashes may 
+differ before being considered near-duplicates. The number of tables needed is
+a function of these two parameters.
+
+	import simhash
+	
+	# 6 blocks, 3 bits may differ
+	corpus = simhash.Corpus(6, 3)
+
+With a corpus, you can then insert, remove and query the data structure. You may
+be interested in just _any_ near-duplicate fingerprint in which case you can use
+`find_first` or `find_first_bulk`. If you're interested in finding _all_ matches
+then you should use `find_all` or `find_all_bulk`:
+
+	# Generate 1M random hashes and random queries
+	import random
+	hashes  = [random.randint(0, 1 << 64) for i in range(1000000)]
+	queries = [random.randint(0, 1 << 64) for i in range(1000000)]
+	
+	# Insert the hashes
+	corpus.insert_bulk(hashes)
+	
+	# Find matches; returns a list of results, each element contains the match
+	# for the corresponding element in the query
+	matches = corpus.find_first_bulk(queries)
+	
+	# Find more matches; returns a list of lists, each of which corresponds to 
+	# the query of the same index
+	matches = corpus.find_all_bulk(queries)
+
+Benchmark
+=========
+This is a rough benchmark, but should help to give you an idea of the order of 
+magnitude for the performance available. Running on a single core on a 2011-ish
+MacBook Pro:
+
+	# ./bench.py --random 1000000 --blocks 5 --bits 3
+	Generating 1000000 hashes
+	Generating 1000000 queries
+	Starting Bulk Insertion
+		 Ran Bulk Insertion in 2.534197s
+	Starting Bulk Find First
+		 Ran Bulk Find First in 4.795310s
+	Starting Bulk Find All
+		 Ran Bulk Find All in 7.415205s
+	Starting Bulk Removal
+		 Ran Bulk Removal in 3.346022s
+
 Architecture
 ============
 Each document gets associated with a 64-bit hash calculated using a rolling 
