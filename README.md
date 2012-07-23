@@ -78,3 +78,14 @@ In this case, the table that's permuted `A C F B D E` will match. It's important
 to note that it's possible for a query to match from more than one table. For 
 example, if two of the non-matching bits are in the same block, or the query 
 differs by fewer than 3 bits.
+
+Building
+========
+
+Pretty simple, actually. The one wrinkle is to install `libjudy` first, see:
+
+	http://judy.sourceforge.net/
+
+After that, it's only a matter of running the normal:
+
+	sudo python setup.py install
