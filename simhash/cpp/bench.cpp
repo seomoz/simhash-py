@@ -3,6 +3,14 @@
 #include <cstdlib>
 #include <vector>
 
+/* Hashes we can use */
+#include "hashes/jenkins.h"
+#include "hashes/murmur.h"
+#include "hashes/fnv.h"
+
+/* Tokenizers we can use */
+#include "tokenizers/strspn.h"
+
 #include "simhash.h"
 #include "util.h"
 
@@ -64,5 +72,14 @@ int main(int argc, char* argv[]) {
 	}
 	
 	std::cout << "Queries complete with " << errors << " errors" << std::endl;
+	
+	size_t count(0);
+	Simhash::Table::const_iterator it( duplicates.begin());
+	Simhash::Table::const_iterator end(duplicates.end());
+	for(; it != end; ++it, ++count) {}
+	
+	std::cout << "There are " << count << " items in the table" << std::endl;
+	
 	return 0;
+
 }

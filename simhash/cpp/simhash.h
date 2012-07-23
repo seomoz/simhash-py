@@ -4,7 +4,7 @@
 // Judy trees are the basis of lookup in this
 #include <Judy.h>
 
-#include "util.h"
+#include "common.h"
 
 #include <iostream>
 
@@ -14,9 +14,18 @@
 
 namespace Simhash {
     /**
-     * An iterator for access into the table. The way Judy arrays work, it could 
-     * be potentially pretty difficult to write a non-const iterator, and 
-     * anyway, I don't anticipate it been needed. */
+     * Compute the number of bits that are flipped between two numbers
+     *
+     * @param a - reference number
+     * @param b - number to compare
+     *
+     * @return number of bits that differ between a and b */
+    size_t num_differing_bits(Simhash::hash_t a, Simhash::hash_t b);
+
+    /**
+     * An iterator for access into the table. The way Judy arrays work, it 
+     * could be potentially pretty difficult to write a non-const iterator, 
+     * and anyway, I don't anticipate it been needed. */
     class const_iterator_t {
         public:
             /**
