@@ -8,21 +8,8 @@ cdef extern from "stdint.h":
     ctypedef unsigned long long uint64_t
     ctypedef unsigned int       size_t
 
-cdef extern from *:
-    ctypedef char* const_char_ptr "const char*"
-
-cdef extern from "simhash-cpp/src/hash.hpp" namespace "Simhash":
-    ctypedef uint64_t hash_t
-    cdef cppclass Strspn:
-        const_char_ptr operator()(const_char_ptr lst)
-
-    cdef cppclass jenkins:
-        uint64_t operator()(const_char_ptr data, size_t len, uint64_t s)
-
-    cdef cppclass Simhash[Hash, Tokenizer]:
-        hash_t hash(char* s, size_t length)
-
 cdef extern from "simhash-cpp/src/simhash.h" namespace "Simhash":
+    ctypedef uint64_t hash_t
     size_t num_differing_bits(hash_t a, hash_t b)
 
     cppclass const_iterator_t:

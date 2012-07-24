@@ -1,6 +1,20 @@
 from cython.operator cimport dereference  as deref
 from cython.operator cimport preincrement as preinc
 
+cdef extern from *:
+    ctypedef char* const_char_ptr "const char*"
+
+cdef extern from "simhash-cpp/src/hash.hpp" namespace "Simhash":
+    ctypedef uint64_t hash_t
+    cdef cppclass Strspn:
+        const_char_ptr operator()(const_char_ptr lst)
+
+    cdef cppclass jenkins:
+        uint64_t operator()(const_char_ptr data, size_t len, uint64_t s)
+
+    cdef cppclass Simhash[Hash, Tokenizer]:
+        hash_t hash(char* s, size_t length)
+
 ################################################################################
 # Core. If you're looking for insight into the library, look here
 ################################################################################
