@@ -8,7 +8,8 @@ cpdef PyHash(s):
     '''
     Utility function to return the simhash of a python string
     '''
-    return simhash(s, len(s))
+    cdef Simhash[jenkins, Strspn] hasher
+    return hasher.hash(s, len(s))
 
 cdef class PyTable:
     '''

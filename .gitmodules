@@ -1,3 +1,6 @@
 [submodule "simhash/cpp/deps/Catch"]
 	path = simhash/cpp/deps/Catch
 	url = https://github.com/philsquared/Catch.git
+[submodule "simhash/simhash-cpp"]
+	path = simhash/simhash-cpp
+	url = https://github.com/seomoz/simhash-cpp.git

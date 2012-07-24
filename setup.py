@@ -5,10 +5,9 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 ext_modules = [Extension('simhash.table', [
-    'simhash/table.pyx',
-    'simhash/cpp/simhash.cpp',
-    'simhash/cpp/hash.cpp',
-    'simhash/cpp/util.cpp'], language='c++', libraries = ['Judy']),
+        'simhash/table.pyx',
+        'simhash/simhash-cpp/src/simhash.cpp'
+    ], language='c++', libraries=['Judy']),
 ]
 
 setup(name           = 'simhash',
