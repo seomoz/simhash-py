@@ -32,14 +32,17 @@ cdef class PyTable:
     It allows for fast queries to determine the all (or if any) known
     fingerprints differ by the query by at most _k_ bytes.
     '''
-    cdef Table* tbl
-    
+
+    cdef          Table* tbl
+    cdef readonly hash_t search_mask
+
     def __cinit__(self, d, permutors):
         cdef vector[hash_t] perms
         for p in permutors:
             perms.push_back(p)
         self.tbl = new Table(d, perms)
-    
+        self.search_mask = self.tbl.get_search_mask()
+
     def __dealloc__(self):
         del self.tbl
     
@@ -200,3 +203,6 @@ cdef class PyCorpus:
         for table in self.tables:
             results.extend(table.find_all(query))
         return results
+
+    cpdef distance(self, hash_t a, hash_t b):
+        return num_differing_bits(a, b)

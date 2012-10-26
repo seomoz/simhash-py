@@ -38,3 +38,5 @@ cdef extern from "simhash-cpp/src/simhash.h" namespace "Simhash":
         
         const_iterator_t begin()
         const_iterator_t end()
+
+        hash_t get_search_mask()
