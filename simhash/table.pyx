@@ -1,19 +1,19 @@
 from cython.operator cimport dereference  as deref
 from cython.operator cimport preincrement as preinc
+from libc.stdlib cimport malloc, free
+import re
 
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
 
 cdef extern from "simhash-cpp/src/hash.hpp" namespace "Simhash":
     ctypedef uint64_t hash_t
-    cdef cppclass Strspn:
-        const_char_ptr operator()(const_char_ptr lst)
-
     cdef cppclass jenkins:
         uint64_t operator()(const_char_ptr data, size_t len, uint64_t s)
 
-    cdef cppclass Simhash[Hash, Tokenizer]:
-        hash_t hash(char* s, size_t length)
+    cdef cppclass Simhash[Hash]:
+        hash_t hash(char *tokens[])
+        hash_t hash_fp(uint64_t *vec, int len)
 
 ################################################################################
 # Core. If you're looking for insight into the library, look here
@@ -22,13 +22,61 @@ cpdef PyHash(s):
     '''
     Utility function to return the simhash of a python string
     '''
-    cdef Simhash[jenkins, Strspn] hasher
-    return hasher.hash(s, len(s))
+    cdef Simhash[jenkins] hasher
+
+    # Tokenize to a Python array
+    tokens = re.split(r'\W+', s, flags=re.UNICODE)
+    utf8 = isinstance(s, unicode)
+    ntokens = len(tokens)
+
+    # Convert Python array to NULL-terminated C array
+    cdef char **ctokens = <char **>malloc((ntokens + 1) * sizeof(char *))
+    if ctokens is NULL:
+        raise MemoryError()
+    try:
+        for i in xrange(ntokens):
+            tokens[i] = ( tokens[i].encode('utf-8') if utf8 else tokens[i] ) + '\0'
+            ctokens[i] = tokens[i]
+        ctokens[ntokens] = NULL
+
+        # Feed C array to C code
+        ret = hasher.hash(ctokens)
+    finally:
+
+        # Hand back our stone axe
+        free(ctokens)
+
+    # AMF...
+    return ret
+
+cpdef PyHashFp(pvec):
+    '''
+    Return simhash of a Python vector of longs.
+    '''
+    cdef Simhash[jenkins] hasher
+
+    # Convert Python array into a C one
+    ntokens = len(pvec)
+    cdef uint64_t *cvec = <uint64_t *>malloc(ntokens * sizeof(uint64_t))
+    if cvec is NULL:
+        raise MemoryError()
+
+    try:
+        # Copy data into C structure, call C code
+        for i in xrange(ntokens):
+            cvec[i] = pvec[i]
+        ret = hasher.hash_fp(cvec, ntokens)
+    finally:
+        # Hand back our stone axe
+        free(cvec)
+
+    # AMF...
+    return ret
 
 cdef class PyTable:
     '''
     A wrapper around the C++ implementation of a data structure that keeps all
-    of a collection of fingerprints sorted subject to a bit block permutation. 
+    of a collection of fingerprints sorted subject to a bit block permutation.
     It allows for fast queries to determine the all (or if any) known
     fingerprints differ by the query by at most _k_ bytes.
     '''
@@ -45,7 +93,7 @@ cdef class PyTable:
 
     def __dealloc__(self):
         del self.tbl
-    
+
     cpdef hashes(self):
         cdef object results = list()
         cdef const_iterator_t it = self.tbl.begin()
@@ -53,37 +101,37 @@ cdef class PyTable:
             results.append(deref(it))
             preinc(it)
         return results
-    
+
     cpdef insert_bulk(self, hashes):
         '''Accept a list of simhashes and insert them into the table'''
         for h in hashes:
             self.tbl.insert(h)
-    
+
     cpdef insert(self, hash_t h):
         '''Insert a single simhash into the table'''
         self.tbl.insert(h)
-    
+
     cpdef remove_bulk(self, hashes):
         '''Remove all the hashes in the provided iterable'''
         for h in hashes:
             self.tbl.remove(h)
-    
+
     cpdef remove(self, hash_t h):
         '''Remove the provided hash from the table'''
         self.tbl.remove(h)
-    
+
     cpdef hash_t find_first(self, hash_t query):
         '''
         Find the first example of a fingerprint that's considered a near-
-        duplicate, if any. If none is found, 0 is returned. Otherwise, the 
+        duplicate, if any. If none is found, 0 is returned. Otherwise, the
         near-duplicate fingerprint.
         '''
         return self.tbl.find(query)
-    
+
     cpdef find_first_bulk(self, queries):
         '''For each of the queries, find the first matching doc'''
         return [self.tbl.find(query) for query in queries]
-    
+
     cpdef find_all(self, hash_t query):
         '''
         Find all fingerprints in the table that are considered near-duplicates
@@ -92,7 +140,7 @@ cdef class PyTable:
         cdef vector[hash_t] results
         self.tbl.find(query, results)
         return [results[i] for i in range(results.size())]
-    
+
     cpdef find_all_bulk(self, queries):
         '''Find all the results for all the queres'''
         cdef vector[hash_t] tmp
@@ -102,7 +150,7 @@ cdef class PyTable:
             results.append([tmp[i] for i in range(tmp.size())])
             tmp.clear()
         return results
-    
+
     cpdef permute(self, hash_t query):
         '''
         Perform the table's permutation on the provided hash. This is not meant
@@ -110,7 +158,7 @@ cdef class PyTable:
         function exposed to curious users.
         '''
         return self.tbl.permute(query)
-    
+
     cpdef unpermute(self, hash_t query):
         '''Inverse of permute(query).'''
         return self.tbl.unpermute(query)
@@ -123,14 +171,14 @@ cdef class PyCorpus:
     '''
     cdef readonly object tables
     cdef readonly size_t differing_bits
-    
+
     def __init__(self, num_blocks, diff_bits):
         '''
-        Given the number of blocks we want to use, make a collection of tables 
+        Given the number of blocks we want to use, make a collection of tables
         with a roughly even number of bits in each of the blocks. This also
         calculates the permutation masks for you.
         '''
-        
+
         import itertools
         # Permutation masks for the various blocks that we'll use
         perms = []
@@ -142,8 +190,8 @@ cdef class PyCorpus:
             for j in range(start, end):
                 num = num | (1 << j)
             perms.append(num)
-        
-        # Now we need to permute our permuators based on diffbits, and create a 
+
+        # Now we need to permute our permuators based on diffbits, and create a
         # PyTable for each of these. We want to take each unique combination of
         # (num_blocks - diff_bits) blocks, and then concatenate the remaining
         # blocks. This ordered list is the permutation for that particular table
@@ -151,38 +199,38 @@ cdef class PyCorpus:
         for combo in itertools.combinations(perms, num_blocks - diff_bits):
             permutors = list(combo) + [p for p in perms if p not in combo]
             self.tables.append(PyTable(diff_bits, permutors))
-    
+
     cpdef hashes(self):
         '''Return all the keys in here'''
         return self.tables[0].hashes()
-    
+
     cpdef insert_bulk(self, hashes):
         '''Insert the provided hashes into each of the tables'''
         for table in self.tables:
             table.insert_bulk(hashes)
-    
+
     cpdef insert(self, h):
         '''Insert a single hash into all the tables'''
         for table in self.tables:
             table.insert(h)
-    
+
     cpdef remove_bulk(self, hashes):
         '''Remove all the provided hashes from all of our tables'''
         for table in self.tables:
             table.remove_bulk(hashes)
-    
+
     cpdef remove(self, h):
         '''Remove a single hash from all the tables'''
         for table in self.tables:
             table.remove(h)
-    
+
     cpdef find_first_bulk(self, queries):
         '''Sequentially find each of the queries'''
-        # Off hand, this looks like a potentially slow implementation. If it 
-        # turns out to be a problem, I think a little verbosity and hard work 
+        # Off hand, this looks like a potentially slow implementation. If it
+        # turns out to be a problem, I think a little verbosity and hard work
         # can make it much faster.
         return [self.find_first(query) for query in queries]
-    
+
     cpdef find_first(self, hash_t query):
         '''Sequentially search each of the tables for this hash'''
         cdef hash_t result
@@ -191,12 +239,12 @@ cdef class PyCorpus:
             if result:
                 return result
         return 0
-    
+
     cpdef find_all_bulk(self, queries):
         '''Sequentially find all matching fingerprints for each query'''
         # Off hand, this looks like a potentially slow implementation
         return [self.find_all(query) for query in queries]
-    
+
     cpdef find_all(self, hash_t query):
         '''Find all the matching fingerprints for this query'''
         results = []
