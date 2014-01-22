@@ -1,3 +1,4 @@
+cimport cython
 from cython.operator cimport dereference  as deref
 from cython.operator cimport preincrement as preinc
 from libc.stdlib cimport malloc, free
@@ -14,6 +15,7 @@ cdef extern from "simhash-cpp/src/hash.hpp" namespace "Simhash":
     cdef cppclass Simhash[Hash]:
         hash_t hash(char *tokens[])
         hash_t hash_fp(uint64_t *vec, int len)
+        hash_t hash_fps(int64_t *vec, int len)
 
 ################################################################################
 # Core. If you're looking for insight into the library, look here
@@ -57,7 +59,7 @@ cpdef PyHashFp(pvec):
 
     # Convert Python array into a C one
     ntokens = len(pvec)
-    cdef uint64_t *cvec = <uint64_t *>malloc(ntokens * sizeof(uint64_t))
+    cdef int64_t *cvec = <int64_t *>malloc(ntokens * sizeof(int64_t))
     if cvec is NULL:
         raise MemoryError()
 
@@ -65,7 +67,7 @@ cpdef PyHashFp(pvec):
         # Copy data into C structure, call C code
         for i in xrange(ntokens):
             cvec[i] = pvec[i]
-        ret = hasher.hash_fp(cvec, ntokens)
+        ret = hasher.hash_fps(cvec, ntokens)
     finally:
         # Hand back our stone axe
         free(cvec)

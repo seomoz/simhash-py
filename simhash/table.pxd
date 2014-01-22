@@ -6,6 +6,7 @@ from libcpp.vector cimport vector
 
 cdef extern from "stdint.h":
     ctypedef unsigned long long uint64_t
+    ctypedef          long long  int64_t
     ctypedef unsigned int       size_t
 
 cdef extern from "simhash-cpp/src/simhash.h" namespace "Simhash":

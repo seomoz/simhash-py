@@ -117,6 +117,11 @@ class TestHash(unittest.TestCase):
         random.shuffle(shuffled)
         self.assertNotMatch(TestHash.jabberwocky, ' '.join(shuffled))
 
+    def test_negative_numbers(self):
+        # We should be able to hash on negative numbers. In not throwing an
+        # exception, this test passes
+        simhash.hash_fp(range(-10, 10))
+
 
 class TestSimhash(unittest.TestCase):
     def setUp(self):
