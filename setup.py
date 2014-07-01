@@ -18,7 +18,7 @@ ext_modules = [Extension('simhash.table', [
 ]
 
 setup(name           = 'simhash',
-    version          = '0.1.0',
+    version          = '0.1.1',
     description      = 'Near-Duplicate Detection with Simhash',
     url              = 'http://github.com/seomoz/simhash-py',
     author           = 'Dan Lecocq',
