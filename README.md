@@ -152,3 +152,14 @@ Pretty simple, actually. The one wrinkle is to install `libjudy` first, see:
 After that, it's only a matter of running the normal:
 
 	sudo python setup.py install
+
+32-Bit Systems
+==============
+Since `simhash-py` uses `libJudy` under the hood, we cannot support 32-bit
+systems. While `libJudy` does support 32-bit systems, on such systems it only
+supports 32-bit keys in the `Judy1` variant. Since `simhash-py` uses 64-bit
+integers, therein lies the issue.
+
+We've discussed the possibility of using an alternative implementation (as
+we've also encountered bugs while using `libJudy`) and support for 32-bit
+systems will be a consideration.

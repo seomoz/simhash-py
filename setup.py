@@ -4,6 +4,13 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
+# Complain on 32-bit systems. See README for more details
+import struct
+if struct.calcsize('P') < 8:
+    raise RuntimeError(
+        'Simhash-py does not work on 32-bit systems. See README.md')
+
+
 ext_modules = [Extension('simhash.table', [
         'simhash/table.pyx',
         'simhash/simhash-cpp/src/simhash.cpp'
