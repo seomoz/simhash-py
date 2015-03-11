@@ -1,5 +1,11 @@
 Simhash Near-Duplicate Detection
 ================================
+![Status: Production](https://img.shields.io/badge/status-production-green.svg?style=flat)
+![Team: Big Data](https://img.shields.io/badge/team-big_data-green.svg?style=flat)
+![Scope: External](https://img.shields.io/badge/scope-external-green.svg?style=flat)
+![Open Source: MIT](https://img.shields.io/badge/open_source-MIT-green.svg?style=flat)
+![Critical: Yes](https://img.shields.io/badge/critical-yes-red.svg?style=flat)
+
 This library enables the identification of near-duplicate documents. In this 
 context, a document is simply a bytestring -- be it the content of a webpage
 or an essay or a text file.
