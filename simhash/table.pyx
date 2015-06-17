@@ -100,7 +100,7 @@ cdef class PyTable:
         cdef object results = list()
         cdef const_iterator_t it = self.tbl.begin()
         while it != self.tbl.end():
-            results.append(deref(it))
+            results.append(self.unpermute(deref(it)))
             preinc(it)
         return results
 
