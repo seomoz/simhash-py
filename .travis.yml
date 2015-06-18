@@ -1,0 +1,5 @@
+language: python
+before_install: ./provision.sh
+script:
+  - python setup.py install
+  - python test/test.py
