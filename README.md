@@ -21,8 +21,7 @@ This library links against [`libJudy`](http://judy.sourceforge.net/), which must
 be installed before building this. It also depends on Cython. With those pieces
 in place, it's almost business as usual, after installing the C++ submodule
 
-    git submodule init
-    git submodule update
+    git submodule update --init --recursive
     python setup.py install
 
 Usage
