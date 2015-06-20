@@ -5,7 +5,7 @@ import random
 import simhash
 import argparse
 
-# Generate some random hashes with known 
+# Generate some random hashes with known
 parser = argparse.ArgumentParser(description='Run a quick bench')
 parser.add_argument('--random', dest='random', type=int, default=None,
     help='Generate N random hashes for querying')
@@ -38,11 +38,11 @@ if args.random:
     if args.hashes and args.queries:
         print 'Random supplied with both --hashes and --queries'
         exit(1)
-    
+
     if not hashes:
         print 'Generating %i hashes' % args.random
         hashes = [random.randint(0, 1 << 64) for i in range(args.random)]
-    
+
     if not queries:
         print 'Generating %i queries' % args.random
         queries = [random.randint(0, 1 << 64) for i in range(args.random)]
