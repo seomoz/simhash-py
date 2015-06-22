@@ -1,5 +1,7 @@
 Simhash Near-Duplicate Detection
 ================================
+[![Build Status](https://travis-ci.org/seomoz/simhash-py.svg?branch=master)](https://travis-ci.org/seomoz/simhash-py)
+
 ![Status: Production](https://img.shields.io/badge/status-production-green.svg?style=flat)
 ![Team: Big Data](https://img.shields.io/badge/team-big_data-green.svg?style=flat)
 ![Scope: External](https://img.shields.io/badge/scope-external-green.svg?style=flat)
