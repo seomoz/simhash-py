@@ -26,7 +26,7 @@ setup(name           = 'simhash',
     packages         = ['simhash'],
     package_dir      = {'simhash': 'simhash'},
     cmdclass         = {'build_ext': build_ext},
-    dependencies     = [],
+    install_requires = [],
     ext_modules      = ext_modules,
     classifiers      = [
         'Programming Language :: Python',
