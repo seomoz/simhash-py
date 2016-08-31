@@ -1,15 +1,22 @@
+CPP_DEPS = \
+	simhash/simhash.pyx \
+	simhash/simhash.pxd \
+	simhash/simhash-cpp/include/permutation.h \
+	simhash/simhash-cpp/src/permutation.cpp \
+	simhash/simhash-cpp/include/simhash.h \
+	simhash/simhash-cpp/src/simhash.cpp
+
 .PHONY: test
+test: simhash/simhash.so
+	nosetests --verbose
+
+simhash/simhash.so: $(CPP_DEPS)
+	python setup.py build_ext --inplace
 
 clean:
-	sudo python setup.py clean
-	rm simhash/table.cpp
+	rm -rf simhash.egg-info build dist simhash/simhash.cpp
+	find . -name '*.pyc' | xargs --no-run-if-empty rm -f
+	find simhash -name '*.so' | xargs --no-run-if-empty rm -f
 
 install:
-	sudo python setup.py install
-
-uninstall:
-	sudo pip uninstall simhash -y
-
-test:
-	python test/test.py
-
+	python setup.py install

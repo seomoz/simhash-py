@@ -8,76 +8,94 @@ Simhash Near-Duplicate Detection
 ![Open Source: MIT](https://img.shields.io/badge/open_source-MIT-green.svg?style=flat)
 ![Critical: Yes](https://img.shields.io/badge/critical-yes-red.svg?style=flat)
 
-This library enables the identification of near-duplicate documents. In this
-context, a document is simply a bytestring -- be it the content of a webpage
-or an essay or a text file.
-
-It contains a C++-level extension designed to speed up queries, as well as
-facilities to distribute the lookup tables. This implementation follows that
-described in the Google paper on the subject of near-duplicate detection with
-simhash.
-
-Building
-========
-This library links against [`libJudy`](http://judy.sourceforge.net/), which must
-be installed before building this. It also depends on Cython. With those pieces
-in place, it's almost business as usual, after installing the C++ submodule
-
-    git submodule update --init --recursive
-    python setup.py install
+This library enables the efficient identification of near-duplicate documents using
+`simhash` using a C++ extension.
 
 Usage
 =====
-A `Corpus` is a collection of all the tables necessary to perform the query
-efficiently. There are two parameters, `num_blocks` and `diff_bits` which
-describe the number of blocks into which the 64-bit hashes should be divided
-(see more about this below) and the number of bits by which two hashes may
-differ before being considered near-duplicates. The number of tables needed is
-a function of these two parameters.
+`simhash` differs from most hashes in that its goal is to have two similar documents
+produce similar hashes, where most hashes have the goal of producing very different
+hashes even in the face of small changes to the input.
 
-    import simhash
+The input to `simhash` is a list of hashes representative of a document. The output is an
+unsigned 64-bit integer. The input list of hashes can be produced in several ways, but
+one common mechanism is to:
 
-    # 6 blocks, 3 bits may differ
-    corpus = simhash.Corpus(6, 3)
+1. tokenize the document
+1. consider overlapping shingles of these tokens (`simhash.shingle`)
+1. `hash` these overlapping shingles
+1. input these hashes into `simhash.compute`
 
-With a corpus, you can then insert, remove and query the data structure. You may
-be interested in just _any_ near-duplicate fingerprint in which case you can use
-`find_first` or `find_first_bulk`. If you're interested in finding _all_ matches
-then you should use `find_all` or `find_all_bulk`:
+This has the effect of considering phrases in a document, rather than just a bag of the
+words in it.
 
-    # Generate 1M random hashes and random queries
-    import random
-    hashes  = [random.randint(0, 1 << 64) for i in range(1000000)]
-    queries = [random.randint(0, 1 << 64) for i in range(1000000)]
+Once we've produced a `simhash`, we would like to compare it to other documents. For two
+documents to be considered near-duplicates, they must have few bits that differ. We can
+compare two documents:
 
-    # Insert the hashes
-    corpus.insert_bulk(hashes)
+```python
+import simhash
 
-    # Find matches; returns a list of results, each element contains the match
-    # for the corresponding element in the query
-    matches = corpus.find_first_bulk(queries)
+a = simhash.compute(...)
+b = simhash.compute(...)
+simhash.num_differing_bits(a, b)
+```
 
-    # Find more matches; returns a list of lists, each of which corresponds to
-    # the query of the same index
-    matches = corpus.find_all_bulk(queries)
+One of the key advantages of `simhash` is that it does not require `O(n^2)` time to find
+all near-duplicate pairs from a set of hashes. Given a whole set of `simhashes`, we can
+find all pairs efficiently:
+
+```python
+import simhash
+
+# The `simhash`-es from our documents
+hashes = []
+
+# Number of blocks to use (more in the next section)
+blocks = 4
+# Number of bits that may differ in matching pairs
+distance = 3
+matches = simhash.find_all(hashes, blocks, distance)
+```
+
+All the matches returned are guaranteed to be _all_ pairs where the hashes differ by
+`distance` bits or fewer. The `blocks` parameter is less intuitive, but is best described
+in [this article](https://moz.com/devblog/near-duplicate-detection/) or in
+[the paper](http://www2007.cpsc.ucalgary.ca/papers/paper215.pdf). The best parameter to
+choose depends on the distribution of the input simhashes, but it must always be at least
+one greater than the provided `distance`.
+
+Internally, `find_all` takes `blocks C distance` passes to complete. The idea is that as
+that value increases (for instance by increasing `blocks`), each pass completes faster.
+In terms of memory, `find_all` takes `O(hashes + matches)` memory.
+
+Building
+========
+This is installable via `pip`:
+
+```bash
+pip install simhash-py
+```
+
+It can also be built from `git`:
+
+```bash
+git submodule update --init --recursive
+python setup.py install
+```
 
 Benchmark
 =========
 This is a rough benchmark, but should help to give you an idea of the order of
-magnitude for the performance available. Running on a single core on a 2011-ish
-MacBook Pro:
+magnitude for the performance available. Running on a single core on a `vagrant` instance
+on a 2015 MacBook Pro:
 
-    # ./bench.py --random 1000000 --blocks 5 --bits 3
-    Generating 1000000 hashes
-    Generating 1000000 queries
-    Starting Bulk Insertion
-         Ran Bulk Insertion in 2.534197s
-    Starting Bulk Find First
-         Ran Bulk Find First in 4.795310s
-    Starting Bulk Find All
-         Ran Bulk Find All in 7.415205s
-    Starting Bulk Removal
-         Ran Bulk Removal in 3.346022s
+```bash
+$ ./bench.py --random 1000000 --blocks 5 --bits 3
+Generating 1000000 hashes
+Starting Find all
+     Ran Find all in 1.595416s
+```
 
 Architecture
 ============
@@ -149,24 +167,6 @@ to note that it's possible for a query to match from more than one table. For
 example, if two of the non-matching bits are in the same block, or the query
 differs by fewer than 3 bits.
 
-Building
-========
-
-Pretty simple, actually. The one wrinkle is to install `libjudy` first, see:
-
-    http://judy.sourceforge.net/
-
-After that, it's only a matter of running the normal:
-
-    sudo python setup.py install
-
 32-Bit Systems
 ==============
-Since `simhash-py` uses `libJudy` under the hood, we cannot support 32-bit
-systems. While `libJudy` does support 32-bit systems, on such systems it only
-supports 32-bit keys in the `Judy1` variant. Since `simhash-py` uses 64-bit
-integers, therein lies the issue.
-
-We've discussed the possibility of using an alternative implementation (as
-we've also encountered bugs while using `libJudy`) and support for 32-bit
-systems will be a consideration.
+The only requirement of `simhash-py` is that it has `uint64_t`.
