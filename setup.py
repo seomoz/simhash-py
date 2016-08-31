@@ -34,4 +34,10 @@ setup(name           = 'simhash',
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP'
     ],
+    tests_require    = [
+        'coverage',
+        'nose',
+        'nose-timer',
+        'rednose'
+    ]
 )
