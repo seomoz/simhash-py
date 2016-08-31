@@ -6,7 +6,7 @@ ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # http://docs.vagrantup.com/v2/
 Vagrant.configure('2') do |config|
-  config.vm.box = 'ubuntu/precise64'
+  config.vm.box = 'ubuntu/trusty64'
   config.vm.hostname = 'simhash-py'
   config.ssh.forward_agent = true
 
