@@ -1,0 +1,3 @@
+include simhash/simhash.cpp
+include simhash/simhash-cpp/src/*
+include simhash/simhash-cpp/include/*
