@@ -8,7 +8,7 @@ CPP_DEPS = \
 
 .PHONY: test
 test: simhash/simhash.so
-	nosetests --verbose
+	PYTHONHASHSEED=0 nosetests --verbose --nocapture
 
 simhash/simhash.so: $(CPP_DEPS)
 	python setup.py build_ext --inplace
