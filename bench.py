@@ -31,7 +31,7 @@ if args.random:
         exit(1)
 
     if not hashes:
-        print 'Generating %i hashes' % args.random
+        print('Generating %i hashes' % args.random)
         hashes = [random.randint(0, 1 << 64) for i in range(args.random)]
 elif not args.hashes:
     print('No hashes or queries supplied')
