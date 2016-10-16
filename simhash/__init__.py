@@ -13,4 +13,4 @@ def shingle(tokens, window=4):
         for _ in range(number):
             next(it)
     while True:
-        yield list(map(next, its))
+        yield [next(it) for it in its]
