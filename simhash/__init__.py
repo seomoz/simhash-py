@@ -5,7 +5,7 @@ import os
 import sys
 from six.moves import range as six_range
 
-if sys.version_info >= (3,2) and \
+if sys.version_info >= (3, 2) and \
         ('PYTHONHASHSEED' not in os.environ or \
          int(os.environ['PYTHONHASHSEED']) != 0):
     # overwrite the unsigned_hash function

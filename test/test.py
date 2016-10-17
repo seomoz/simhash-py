@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import re
+import sys
 import unittest
 
 import simhash
@@ -188,7 +189,12 @@ class TestFunctional(unittest.TestCase):
     def test_added_text(self):
         a = self.compute(self.jabberwocky)
         b = self.compute(self.jabberwocky + ' - Lewis Carroll (Alice in Wonderland)')
-        self.assertLessEqual(simhash.num_differing_bits(a, b), self.MATCH_THRESHOLD)
+
+        match_threshold = self.MATCH_THRESHOLD
+        if sys.version_info >= (3, 4):
+            match_threshold += 2 # increase the match_threshold as the Python hashing
+                                 # changed in Python >= 3.4
+        self.assertLessEqual(simhash.num_differing_bits(a, b), match_threshold)
 
     def test_identical_text(self):
         a = self.compute(self.jabberwocky)
