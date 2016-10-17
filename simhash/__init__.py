@@ -3,6 +3,7 @@
 from .simhash import unsigned_hash, num_differing_bits, compute, find_all
 import os
 import sys
+from six.moves import range as six_range
 
 if sys.version_info >= (3,2) and \
         ('PYTHONHASHSEED' not in os.environ or \
@@ -21,10 +22,10 @@ def shingle(tokens, window=4):
     if window <= 0:
         raise ValueError('Window size must be positive')
     its = []
-    for number in range(window):
+    for number in six_range(window):
         it = iter(tokens)
         its.append(it)
-        for _ in range(number):
+        for _ in six_range(number):
             next(it)
     while True:
         yield [next(it) for it in its]

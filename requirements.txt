@@ -6,3 +6,4 @@ nose-timer==0.6.0
 python-termstyle==0.1.10
 rednose==1.2.1
 termcolor==1.1.0
+six==1.10.0
