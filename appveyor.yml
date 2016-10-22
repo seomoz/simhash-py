@@ -26,9 +26,8 @@ install:
   - conda update -q conda
   - conda info -a
   - "cd C:\\projects\\simhash-py"
-  # create a conda virtual environement and install pywin32
-  # (otherwise we get a cython compilation error)
-  - "conda create -n simhash-env --yes pywin32 python=%PYTHON_VERSION%"
+  # create a conda virtual environement
+  - "conda create -n simhash-env --yes python=%PYTHON_VERSION%"
   - activate simhash-env
   - pip install -r requirements.txt
   - python setup.py install

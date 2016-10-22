@@ -1,8 +1,16 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
-from distutils.core import setup
-from distutils.extension import Extension
+try:
+    from setuptools.core import setup
+    from setuptools.extension import Extension
+except ImportError:
+    from distutils.core import setup
+    from distutils.extension import Extension
+
+import os
+
+print(os.environ['CXX'])
 
 # Complain on 32-bit systems. See README for more details
 import struct
