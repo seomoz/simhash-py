@@ -11,11 +11,12 @@ environment:
     - PYTHON_VERSION: 2.7
       PYTHON_ARCH: "64"
       MINICONDA: C:\Miniconda-x64
-    # not running the other tests at the moment
-    # (PY3 not yet supported)
-    #- PYTHON_VERSION: 3.5
-    #  PYTHON_ARCH: "64"
-    #  MINICONDA: C:\Miniconda3-x64
+    - PYTHON_VERSION: 3.4
+      PYTHON_ARCH: "64"
+      MINICONDA: C:\Miniconda3-x64
+    - PYTHON_VERSION: 3.5
+      PYTHON_ARCH: "64"
+      MINICONDA: C:\Miniconda3-x64
 
 init:
   - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH% %MINICONDA%"
@@ -30,10 +31,13 @@ install:
   - "conda create -n simhash-env --yes python=%PYTHON_VERSION%"
   - activate simhash-env
   - pip install -r requirements.txt
+  - git submodule update --init --recursive
   - python setup.py install
 
 
 
 test_script:
   - activate simhash-env # activate the virtualenv
-  - make test
+  - python setup.py build_ext --inplace
+  - SET PYTHONHASHSEED=0
+  - nosetests --verbose --nocapture
