@@ -8,10 +8,6 @@ except ImportError:
     from distutils.core import setup
     from distutils.extension import Extension
 
-import os
-
-print(os.environ['CXX'])
-
 # Complain on 32-bit systems. See README for more details
 import struct
 if struct.calcsize('P') < 8:
@@ -37,10 +33,23 @@ except ImportError:
 ext_modules = [
     Extension('simhash.simhash', ext_files,
         language='c++',
-        extra_compile_args=['-std=c++11'],
         include_dirs=['simhash/simhash-cpp/include']
     )
 ]
+
+# Adapt extra_compile_args based on the compiler used
+# https://stackoverflow.com/a/5192738/1791279
+class build_ext_subclass( build_ext ):
+    def build_extensions(self):
+        c = self.compiler.compiler_type
+        print(c)
+        if c == "msvc":
+            pass  # C++ 11 support in Visual Studio should be turned on by default
+        else:
+           for e in self.extensions:
+               e.extra_compile_args = ['-std=c++11']
+        build_ext.build_extensions(self)
+
 
 setup(name           = 'simhash',
     version          = '0.2.0',
