@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import print_function
 
 from distutils.core import setup
 from distutils.extension import Extension
@@ -18,11 +19,11 @@ kwargs = {}
 
 try:
     from Cython.Distutils import build_ext
-    print 'Building from Cython'
+    print('Building from Cython')
     ext_files.append('simhash/simhash.pyx')
     kwargs['cmdclass'] = {'build_ext': build_ext}
 except ImportError:
-    print 'Buidling from C++'
+    print('Buidling from C++')
     ext_files.append('simhash/simhash.cpp')
 
 ext_modules = [
