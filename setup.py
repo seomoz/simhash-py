@@ -27,33 +27,35 @@ except ImportError:
     ext_files.append('simhash/simhash.cpp')
 
 ext_modules = [
-    Extension('simhash.simhash', ext_files,
+    Extension(
+        'simhash.simhash', ext_files,
         language='c++',
         extra_compile_args=['-std=c++11'],
         include_dirs=['simhash/simhash-cpp/include']
     )
 ]
 
-setup(name           = 'simhash',
-    version          = '0.2.0',
-    description      = 'Near-Duplicate Detection with Simhash',
-    url              = 'http://github.com/seomoz/simhash-py',
-    author           = 'Dan Lecocq',
-    author_email     = 'dan@moz.com',
-    classifiers      = [
+setup(
+    name='simhash',
+    version='0.3.0',
+    description='Near-Duplicate Detection with Simhash',
+    url='http://github.com/seomoz/simhash-py',
+    author='Dan Lecocq',
+    author_email='dan@moz.com',
+    classifiers=[
         'Programming Language :: Python',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP'
     ],
-    ext_modules      = ext_modules,
-    packages         = [
+    ext_modules=ext_modules,
+    packages=[
         'simhash'
     ],
-    package_dir      = {
+    package_dir={
         'simhash': 'simhash'
     },
-    tests_require    = [
+    tests_require=[
         'coverage',
         'nose',
         'nose-timer',
