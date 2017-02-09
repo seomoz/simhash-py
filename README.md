@@ -74,7 +74,7 @@ Building
 This is installable via `pip`:
 
 ```bash
-pip install simhash-py
+pip install git+https://github.com/seomoz/simhash-py.git
 ```
 
 It can also be built from `git`:
