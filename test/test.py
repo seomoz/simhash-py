@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import re
-import sys
 import unittest
 
 import simhash
@@ -181,20 +180,20 @@ class TestFunctional(unittest.TestCase):
         Had a damned-near infinite slope!'''
 
     def compute(self, text):
-        tokens = re.split(r'\W+', text, flags=re.UNICODE)
-        phrases = (' '.join(phrase) for phrase in simhash.shingle(tokens, 4))
-        hashes = list(map(simhash.unsigned_hash, phrases))
+        tokens = re.split(r'\W+', text.lower(), flags=re.UNICODE)
+        shingles = [''.join(shingle) for shingle in
+                    simhash.shingle(''.join(tokens), 4)]
+        hashes = [simhash.unsigned_hash(s.encode('utf8')) for s in shingles]
         return simhash.compute(hashes)
 
     def test_added_text(self):
         a = self.compute(self.jabberwocky)
-        b = self.compute(self.jabberwocky + ' - Lewis Carroll (Alice in Wonderland)')
+        b = self.compute(
+            self.jabberwocky + ' - Lewis Carroll (Alice in Wonderland)')
 
-        match_threshold = self.MATCH_THRESHOLD
-        if sys.version_info >= (3, 4):
-            match_threshold += 2 # increase the match_threshold as the Python hashing
-                                 # changed in Python >= 3.4
-        self.assertLessEqual(simhash.num_differing_bits(a, b), match_threshold)
+        self.assertLessEqual(
+            simhash.num_differing_bits(a, b),
+            self.MATCH_THRESHOLD)
 
     def test_identical_text(self):
         a = self.compute(self.jabberwocky)
@@ -204,4 +203,6 @@ class TestFunctional(unittest.TestCase):
     def test_different(self):
         a = self.compute(self.jabberwocky)
         b = self.compute(self.pope)
-        self.assertGreater(simhash.num_differing_bits(a, b), self.MATCH_THRESHOLD)
+        self.assertGreater(
+            simhash.num_differing_bits(a, b),
+            self.MATCH_THRESHOLD)

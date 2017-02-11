@@ -1,9 +1,13 @@
+import hashlib
+import struct
+
 from simhash cimport compute as c_compute
 from simhash cimport find_all as c_find_all
 
-def unsigned_hash(obj):
-    '''The built-in hash suitable for use as a hash_t.'''
-    return hash(obj) & 0xFFFFFFFFFFFFFFFF
+
+def unsigned_hash(bytes obj):
+    '''Returns a hash suitable for use as a hash_t.'''
+    return struct.unpack('>Q', hashlib.md5(obj).digest()[0:8])[0] & 0xFFFFFFFFFFFFFFFF
 
 def compute(hashes):
     '''Compute the simhash of a vector of hashes.'''
@@ -12,7 +16,7 @@ def compute(hashes):
 def find_all(hashes, number_of_blocks, different_bits):
     '''
     Find the set of all matches within the provided vector of hashes.
-    
+
     The provided hashes are manipulated in place, but upon completion are
     restored to their original state.
     '''
