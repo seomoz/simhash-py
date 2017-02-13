@@ -1,5 +1,4 @@
 *.dSYM
-*.cpp
 *.o
 *.pyc
 *.so
