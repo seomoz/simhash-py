@@ -7,7 +7,10 @@ from simhash cimport find_all as c_find_all
 
 def unsigned_hash(bytes obj):
     '''Returns a hash suitable for use as a hash_t.'''
-    return struct.unpack('>Q', hashlib.md5(obj).digest()[0:8])[0] & 0xFFFFFFFFFFFFFFFF
+    # Takes first 8 bytes of MD5 digest
+    digest = hashlib.md5(obj).digest()[0:8]
+    # Unpacks the binary bytes in digest into a Python integer
+    return struct.unpack('>Q', digest)[0] & 0xFFFFFFFFFFFFFFFF
 
 def compute(hashes):
     '''Compute the simhash of a vector of hashes.'''
