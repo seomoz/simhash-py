@@ -41,3 +41,4 @@ pushd /vagrant
     pip install -r requirements.txt
 
 popd
+echo 'cd /vagrant/' >> ~/.bash_profile
