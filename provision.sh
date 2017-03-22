@@ -42,3 +42,6 @@ pushd /vagrant
 
 popd
 echo 'cd /vagrant/' >> ~/.bash_profile
+echo '
+. /vagrant/venv/bin/activate
+' >> ~/.bash_profile
