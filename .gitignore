@@ -4,6 +4,8 @@
 *.so
 *~
 .vagrant/
-build/*
+MANIFEST
+build/
+dist/
 driver
 venv/
