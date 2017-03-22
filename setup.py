@@ -36,8 +36,8 @@ ext_modules = [
 ]
 
 setup(
-    name='simhash',
-    version='0.3.0',
+    name='simhash-py',
+    version='0.4.0',
     description='Near-Duplicate Detection with Simhash',
     url='http://github.com/seomoz/simhash-py',
     author='Dan Lecocq',
