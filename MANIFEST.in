@@ -1,3 +1,8 @@
 include simhash/simhash.cpp
 include simhash/simhash-cpp/src/*
 include simhash/simhash-cpp/include/*
+include test/*
+makefile
+LICENSE
+README.md
+requirements.txt
