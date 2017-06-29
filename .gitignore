@@ -1,10 +1,11 @@
 *.dSYM
-*.cpp
 *.o
 *.pyc
 *.so
 *~
 .vagrant/
-build/*
+MANIFEST
+build/
+dist/
 driver
 venv/
