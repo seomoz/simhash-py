@@ -84,6 +84,16 @@ git submodule update --init --recursive
 python setup.py install
 ```
 
+or 
+```bash
+pip install simhash-py
+```
+under osx, you should 
+```bash
+export MACOSX_DEPLOYMENT_TARGET = 10.x (10.9,10.10...)
+```
+first
+
 Benchmark
 =========
 This is a rough benchmark, but should help to give you an idea of the order of
