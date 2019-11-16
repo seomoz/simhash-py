@@ -1,6 +1,6 @@
 colorama==0.3.7
 coverage==4.1
-Cython==0.24.1
+Cython
 nose==1.3.7
 nose-timer==0.6.0
 python-termstyle==0.1.10
