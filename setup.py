@@ -36,10 +36,10 @@ ext_modules = [
 
 setup(
     name="simhash-py",
-    version="0.4.1",
+    version="0.4.2",
     description="Near-Duplicate Detection with Simhash",
     url="http://github.com/seomoz/simhash-py",
-    author="Moz Pro Services",
+    author="Moz, Inc.",
     author_email="turbo@moz.com",
     classifiers=[
         "Programming Language :: Python",
