@@ -11,63 +11,159 @@ Simhash Near-Duplicate Detection
 This library enables the efficient identification of near-duplicate documents using
 `simhash` using a C++ extension.
 
-Usage
-=====
-`simhash` differs from most hashes in that its goal is to have two similar documents
-produce similar hashes, where most hashes have the goal of producing very different
-hashes even in the face of small changes to the input.
+Overview
+========
+`simhash` is a bit of an overloaded word. It is often used interchangeably for:
+1) a function to generate a simhash from input, and 2) method used for identifying
+near-duplicates from a set of simhashes. This document will try to preserve that
+distinction.
 
-The input to `simhash` is a list of hashes representative of a document. The output is an
-unsigned 64-bit integer. The input list of hashes can be produced in several ways, but
-one common mechanism is to:
+The `simhash` hashing function accepts a list of input hashes and produces a
+single hash. It doesn't matter how long the input list is - `simhash` will always
+give a hash of the same size, 64 bits. The details of this transformation aren't
+particularly interesting, but the input to this function is very important. **The
+way the input list of hashes is computed has a huge impact on the quality of the
+matches found.**
 
-1. tokenize the document
-1. consider overlapping shingles of these tokens (`simhash.shingle`)
-1. `hash` these overlapping shingles
-1. input these hashes into `simhash.compute`
+If there is one thing that we should make very clear, it's that while this library
+provides tooling to help with 1) performing the simhash hashing function on an
+input list of hashes and 2) performing the duplication detection on the resulting
+hashes, **users of the library must be able to convert each of their documents
+to a representative list of hashes in order to get good results.** How that
+"representative" list is created is highly application-specific: the techniques
+that could be used on a photograph are very different from those that could be
+used on a webpage.
 
-This has the effect of considering phrases in a document, rather than just a bag of the
-words in it.
+Practical Considerations
+========================
+There is a [writeup](https://moz.com/devblog/near-duplicate-detection/) that goes
+into more detail, but we will try to summarize some important points here.
 
-Once we've produced a `simhash`, we would like to compare it to other documents. For two
-documents to be considered near-duplicates, they must have few bits that differ. We can
-compare two documents:
+Suppose we have a bunch of text documents we want to compare. Before identifying
+duplicates, we much first generate the simhashes for each. To do so, we must
+turn each document into a list of hashes. Let's start by just taking all the
+words of the document in order, and put it through the `unsigned_hash` function:
 
 ```python
-import simhash
+from simhash import unsigned_hash, compute
 
-a = simhash.compute(...)
-b = simhash.compute(...)
-simhash.num_differing_bits(a, b)
+document = 'some really long block of text...'
+words = document.split(' ')
+
+# We'll see in a minute that this is a BAD technique. Do not do this.
+hashes = map(unsigned_hash, words)
+simhash = compute(hashes)
 ```
 
-One of the key advantages of `simhash` is that it does not require `O(n^2)` time to find
-all near-duplicate pairs from a set of hashes. Given a whole set of `simhashes`, we can
-find all pairs efficiently:
+The problem with this is that a very different document could have the exact same
+hash:
 
 ```python
-import simhash
-
-# The `simhash`-es from our documents
-hashes = []
-
-# Number of blocks to use (more in the next section)
-blocks = 4
-# Number of bits that may differ in matching pairs
-distance = 3
-matches = simhash.find_all(hashes, blocks, distance)
+# These documents would have the exact same simhashes if we
+a = 'one two three four five ...'
+b = 'two four three five one ...'
 ```
 
-All the matches returned are guaranteed to be _all_ pairs where the hashes differ by
-`distance` bits or fewer. The `blocks` parameter is less intuitive, but is best described
-in [this article](https://moz.com/devblog/near-duplicate-detection/) or in
-[the paper](http://www2007.cpsc.ucalgary.ca/papers/paper215.pdf). The best parameter to
-choose depends on the distribution of the input simhashes, but it must always be at least
-one greater than the provided `distance`.
+To improve this situation, a common technique is to use "shingling." Just like
+shingles on a roof overlap, we will consider overlapping ranges of words. For
+example, for the text `one two three four five ...`, we could get shingles of
+size three: `one two three`, `two three four`, `three four five`, `four five ...`.
+Using this technique ensures that the order of words is important, not just which
+words are used.
 
-Internally, `find_all` takes `blocks C distance` passes to complete. The idea is that as
-that value increases (for instance by increasing `blocks`), each pass completes faster.
-In terms of memory, `find_all` takes `O(hashes + matches)` memory.
+We provide a `shingle` function to help with this:
+
+```python
+from simhash import shingle
+
+words = ...
+# Use four words per shingle
+shingles = shingle(words, window=4)
+# Use the shingles when computing the hashes, instead of words
+hashes = map(unsigned_hash, shingles)
+simhash = compute(hashes)
+```
+
+Two simhashes are considered near-duplicates if their simhashes differ by a few
+bits. Exactly how many "a few" means is highly application-specific (as much so
+as the method for computing the input hashes to the simhash function).
+
+Example Code
+============
+If you were looking for a shortcut for getting good near-duplicates, this is
+the closest thing to it. **However, read and understand this document or risk
+sub-par duplicate-detection.** And with that, let's dive into an example using
+tokenized text documents:
+
+```python
+from simhash import shingle, unsigned_hash, compute, find_all, num_differing_bits
+from collections import defaultdict
+import itertools
+
+def simhashDocument(doc):
+    '''Do rudimentary tokenization and produce a simhash.'''
+    shingles = shingle(doc.split(' '), window=4)
+    return compute(map(unsigned_hash, shingles))
+
+# We need to keep a mapping of simhashes to the original document. This is a
+# dict to lists, because theoretically documents could collide.
+simhashMap = defaultdict(list)
+
+# The paths to each of the document
+paths = [...]
+
+# Compute all the simhashes
+for path in paths:
+    with open(path) as fin:
+        doc = fin.read()
+        simhashMap[simhashDocument(doc)].append(path)
+
+# Find all the matching pairs
+#
+# The different_bits parameter is application-specific, and we'll talk about how
+# to pick a good value in the next section.
+#
+# The number_of_blocks parameter affects performance. It must be in the range
+# [different_bits + 1, 64]. Try starting with different_bits + 2 and tweak from
+# there for the best performance.
+pairs = find_all(simhashMap.keys(), number_of_blocks=6, different_bits=3)
+
+# For each pair in the matches, all associated documents are near-duplicates
+for a, b in pairs:
+    distance = num_differing_bits(a, b)
+    aPaths = simhashMap[a]
+    bPaths = simhashMap[b]
+    for aPath, bPath in itertools.product(aPaths, bPaths):
+        print '%s is a near-duplicate of %s (distance = %s)' % (aPath, bPath, distance)
+
+# Technically, all the documents with the same simhash are near-duplicates as
+# well, but that's left as an exercise for the reader.
+```
+
+Choosing Parameters
+===================
+
+The `number_of_blocks` parameter is not particularly intuitive. They are described
+in more detail in this article](https://moz.com/devblog/near-duplicate-detection/) or in
+[the paper](http://www2007.cpsc.ucalgary.ca/papers/paper215.pdf). Internally,
+`find_all` takes `number_of_blocks C different_bits` passes to complete. With
+more blocks, the number of passes required increases combinatorially, but each
+pass becomes faster. It is important to find the correct balance for performance.
+
+The pairs returned by `find_all` are guaranteed to be _all_ the pairs where the
+simhashes differ by `different_bits` or fewer. This may find all the documents
+you are attempting to match, but that gets back to the two main factors that
+determine the quality of matches: 1) the way the representative document hashes
+are computed, and 2) the `different_bits` parameter.
+
+Choosing the best `different_bits` parameter is difficult. It usually involves
+taking an example set of documents and a gold standard of all the near-duplicate
+document pairs, and then evaluating the
+[precision and recall](https://en.wikipedia.org/wiki/Precision_and_recall) for
+different choices of parameters. While perfect results are unlikely, it is
+certainly possible to get both precision and recall to be very high. The big
+upside to the `simhash` approach is that it can be easily run on datasets that
+would otherwise be prohibitively large.
 
 Building
 ========
