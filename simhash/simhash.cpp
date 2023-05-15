@@ -1860,7 +1860,7 @@ static PyTypeObject __pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__
   sizeof(struct __pyx_obj___pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc___pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py, /*tp_dealloc*/
-  0, /*tp_print*/
+  0, /*tp_print <= 3.8 and tp_vectorcall_offset >= 3.9 */
   0, /*tp_getattr*/
   0, /*tp_setattr*/
   #if PY_MAJOR_VERSION < 3
@@ -2109,7 +2109,11 @@ PyMODINIT_FUNC PyInit_simhash(void)
   /*--- Function export code ---*/
   /*--- Type init code ---*/
   if (PyType_Ready(&__pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py) < 0) __PYX_ERR(1, 64, __pyx_L1_error)
-  __pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py.tp_print = 0;
+  #if PY_VERSION_HEX <= 0x03080000
+    __pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py.tp_print = 0;
+  #else
+    __pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py.tp_vectorcall_offset = 0;
+  #endif
   __pyx_ptype___pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py = &__pyx_scope_struct____Pyx_CFunc_size__t____hash__t____hash__t___to_py;
   /*--- Type import code ---*/
   /*--- Variable import code ---*/

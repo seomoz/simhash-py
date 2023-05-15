@@ -9,3 +9,6 @@ build/
 dist/
 driver
 venv/
+
+.idea/
+simhash_py.egg-info/
